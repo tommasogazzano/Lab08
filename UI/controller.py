@@ -13,8 +13,45 @@ class Controller:
         self.fillIDMap()
 
     def handleWorstCase(self, e):
-        # TO FILL
-        pass
+        nercID = self._view._ddNerc.value
+        maxY = self._view._txtYears.value
+        maxH = self._view._txtHours.value
+
+        nerc = self._idMap[nercID]
+
+        self._view._txtOut.controls.clear()
+
+        sol = self._model.worstCase(nerc, maxY, maxH)
+        if not sol:
+            self._view._txtOut.controls.append(ft.Text("nessun evento trovato"))
+        else:
+            total_affected = sum(event.customers_affected for event in sol)
+            total_hours = sum(self._model.calcolaOre(event) for event in sol)
+
+            # Aggiungi le informazioni di riepilogo
+            self._view._txtOut.controls.append(
+                ft.Text(f"Tot people affected: {total_affected}")
+            )
+            self._view._txtOut.controls.append(
+                ft.Text(f"Tot hours of outage: {total_hours:.2f}")
+            )
+
+            # Aggiungi una riga vuota per separare
+            self._view._txtOut.controls.append(ft.Text(""))
+
+            # Aggiungi ogni evento alla ListView come controllo Text
+            for event in sol:
+                # Formatta le date come nell'esempio
+                start_time = event.date_event_began
+                end_time = event.date_event_finished
+
+                # Crea una rappresentazione leggibile dell'evento
+                event_info = (
+                    f"id={event.id}, customers_affected={event.customers_affected} "
+                    f"start_time={start_time}, end_time= {end_time}"
+                )
+                self._view._txtOut.controls.append(ft.Text(event_info))
+        self._view.update_page()
 
     def fillDD(self):
         nercList = self._model.listNerc
